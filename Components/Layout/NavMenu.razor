@@ -1,0 +1,36 @@
+﻿@inject Session Session
+@inject ILogger<NavMenu> Logger
+@inject NavigationManager NavigationManager
+<ul class="nav">
+    <li class="nav-item">
+        <a class="nav-link " aria-current="page" href="#">Kotisivu</a>
+    </li>
+    @if (Session.User.Id==0)
+    {
+    <li class="nav-item">
+        <a class="nav-link" href="login">Sisäänkirjautuminen</a>
+    </li>
+    }
+    else{
+    <li class="nav-item">
+            <a class="nav-link" href="/" @onclick="Logout">Uloskirjautuminen @Session.User.UserName</a>
+    </li>
+    }
+</ul>
+@code {
+    //[Parameter]
+    //public string UserName { get; set; } = "";
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("OnInitializedAsync");
+    }
+    protected override async void OnAfterRender(bool firstRender)
+    {
+    }
+    void Logout()
+    {
+         Session.LogOut();
+         NavigationManager.NavigateTo("/",true);
+    }
+
+}

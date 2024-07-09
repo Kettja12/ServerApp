@@ -1,0 +1,33 @@
+﻿@page "/login"
+@inject Session Session
+@inject NavigationManager NavigationManager
+<PageTitle>Sisäänkirjautuminen</PageTitle>
+<NavMenu/>
+<h3>Sisäänkirjautuminen</h3>
+<form>
+    <div class="mb-3">
+        <label for="userName" class="form-label">Käyttäjätunnus tai sähköpostiosoite</label>
+        <input type="text" class="form-control" id="userName" @bind="userName">
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Salasana</label>
+        <input type="password" class="form-control" id="password" @bind="password">
+    </div>
+    <a class="nav-link" href="register">rekisteröityminen</a>
+    <button type="button" class="btn btn-primary" @onclick="LogIn">Kirjaudu</button>
+</form>
+@code {
+    string userName="";
+    string password="";
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    async Task LogIn()
+    {
+        if (await Session.Login(userName, password))
+         {
+             NavigationManager.NavigateTo("/");
+         }
+    }
+}

@@ -1,0 +1,49 @@
+﻿@page "/register"
+@inject ILogger<Register> Logger
+@inject Session Session
+@inject NavigationManager NavigationManager
+<NavMenu />
+<h3>Register</h3>
+<form>
+    <div class="mb-3">
+        <label for="userName" class="form-label">Käyttäjätunnus</label>
+        <input type="text" class="form-control" id="userName" @bind="userName">
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Salasana</label>
+        <input type="password" class="form-control" id="password" @bind="password">
+    </div>
+    <div class="mb-3">
+        <label for="password2" class="form-label">Salasana varmistus</label>
+        <input type="password2" class="form-control" id="passwords" @bind="password2">
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="RegisterUser">Rekisteröidy</button>
+</form>
+
+
+@code {
+    string userName = "";
+    string password = "";
+    string password2 = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    async Task RegisterUser()
+    {
+        try
+        {
+            if (await Session.RegisterUser(userName, password))
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.Message,ex);
+        }
+    }
+
+
+}
