@@ -1,36 +1,30 @@
 ﻿@inject Session Session
-@inject ILogger<NavMenu> Logger
+@inject IStringLocalizer<Resource> R
 @inject NavigationManager NavigationManager
 <ul class="nav">
     <li class="nav-item">
-        <a class="nav-link " aria-current="page" href="#">Kotisivu</a>
+        <a class="nav-link " aria-current="page" href="#">@R["HomePageTitle"]</a>
     </li>
-    @if (Session.User.Id==0)
+    @if (Session.User.Id == 0)
     {
-    <li class="nav-item">
-        <a class="nav-link" href="login">Sisäänkirjautuminen</a>
-    </li>
+        <li class="nav-item">
+            <a class="nav-link" href="login">@R["LoginPageTitle"]</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="registration">@R["RegistrationPageTitle"]</a>
+        </li>
     }
-    else{
-    <li class="nav-item">
-            <a class="nav-link" href="/" @onclick="Logout">Uloskirjautuminen @Session.User.UserName</a>
-    </li>
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/" @onclick="Logout">@R["SignOut"] @Session.User.FirstName @Session.User.LastName</a>
+        </li>
     }
 </ul>
 @code {
-    //[Parameter]
-    //public string UserName { get; set; } = "";
-    protected override async Task OnInitializedAsync()
-    {
-        Logger.LogInformation("OnInitializedAsync");
-    }
-    protected override async void OnAfterRender(bool firstRender)
-    {
-    }
     void Logout()
     {
-         Session.LogOut();
-         NavigationManager.NavigateTo("/",true);
+        Session.LogOut();
+        NavigationManager.NavigateTo("/", true);
     }
-
 }

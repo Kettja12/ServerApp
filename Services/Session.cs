@@ -1,18 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Caching.Memory;
-using ServerApp.Repository;
+using ServerApp;
 using System.Net.Http;
 
 namespace ServerApp.Services
 {
     public class Session
     {
-        private readonly Authentication authentication;
+        Repository repository;
         public readonly Guid SessionToken = Guid.NewGuid();
         public User User { get; private set;} =new User();
-        public Session(Authentication authentication)
+        public Session(Repository repository)
         {
-            this.authentication = authentication;
+            this.repository = repository;
         }
         public void LogOut()
         {
@@ -21,13 +21,14 @@ namespace ServerApp.Services
 
         public async Task<bool> Login(string userName, string password)
         {
-            User = await authentication.LoginAsync(userName, password);
+            User = repository.LoginUser(userName, password);
             return User.Id>0;
         }
-        public async Task<bool> RegisterUser(string userName, string password)
+        public async Task<(bool status,string message)> RegisterUser(User user, string password)
         {
-            User = await authentication.RegisterUser(userName, password);
-            return User.Id > 0;
+            string message;
+            (User,message) = repository.RegisterUser(user, password);
+            return (User.Id > 0,message);
         }
     }
 

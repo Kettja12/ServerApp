@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 using ServerApp.Components;
@@ -12,13 +13,18 @@ Log.Logger = new LoggerConfiguration()
 Log.Information("Init");
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
-    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)); 
+    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
+
+var connectionString = builder.Configuration.GetConnectionString("Storage") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddTransient<Repository>(provider =>
+    new Repository(connectionString)
+);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddLocalization();
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<ServerApp.Repository.Datacontext>();
-builder.Services.AddScoped<ServerApp.Repository.Authentication>();
 builder.Services.AddScoped<Session>();
 
 Log.Debug("Build");

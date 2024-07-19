@@ -1,33 +1,75 @@
 ﻿@page "/login"
 @inject Session Session
+@inject IStringLocalizer<Resource> R
+@inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
-<PageTitle>Sisäänkirjautuminen</PageTitle>
-<NavMenu/>
-<h3>Sisäänkirjautuminen</h3>
-<form>
-    <div class="mb-3">
-        <label for="userName" class="form-label">Käyttäjätunnus tai sähköpostiosoite</label>
-        <input type="text" class="form-control" id="userName" @bind="userName">
-    </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">Salasana</label>
-        <input type="password" class="form-control" id="password" @bind="password">
-    </div>
-    <a class="nav-link" href="register">rekisteröityminen</a>
-    <button type="button" class="btn btn-primary" @onclick="LogIn">Kirjaudu</button>
-</form>
-@code {
-    string userName="";
-    string password="";
-    protected override async Task OnInitializedAsync()
-    {
-    }
+<PageTitle>@R["LoginPageTitle"]</PageTitle>
+<div class="container">
+    <div class="row h-100 justify-content-center align-items-center mt-5">
+        <div class="card border-light mb-3" style="width: 18rem;">
+            <h3>@R["LoginPageTitle"]</h3>
+            <FieldError Error="@model.LoginError"></FieldError>
 
+            <div class="mb-3">
+                <label for="userName" class="form-label">@R["UserNameOrEmail"]</label>
+                <input type="text" class="form-control" id="userName" @bind="model.UserName">
+                <FieldError Error="@model.UsernameError"></FieldError>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">@R["Password"]</label>
+                <input type="password" class="form-control" id="password" @bind="model.Password">
+                <FieldError Error="@model.PasswordError"></FieldError>
+            </div>
+            <button type="button" class="btn btn-primary mb-3" @onclick="LogIn">@R["SignIn"]</button>
+            <div class="mb-3">
+                <a href="registration">@R["RegistrationPageTitle"]</a>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    LoginModel model = new();
     async Task LogIn()
     {
-        if (await Session.Login(userName, password))
-         {
-             NavigationManager.NavigateTo("/");
-         }
+        try
+        {
+
+            if (model.Validate() == false) return;
+            if (await Session.Login(model.UserName, model.Password))
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e.StackTrace);
+            model.LoginError = "System error";
+        }
+    }
+    class LoginModel
+    {
+        public string UserName = "";
+        public string Password = "";
+        public string UsernameError = "";
+        public string PasswordError = "";
+        public string LoginError = "";
+
+        public bool Validate()
+        {
+            UsernameError = UserName.Verify(false);
+            if (UsernameError == "EmptyValueNotAllowed")
+            {
+                UsernameError = "GiveUserNameOrPassword";
+            }
+
+            PasswordError = Password.Verify(false);
+            if (PasswordError == "EmptyValueNotAllowed")
+            {
+                PasswordError = "GivePassword";
+            }
+            if (UsernameError + PasswordError != "") return false;
+            return true;
+        }
+
     }
 }

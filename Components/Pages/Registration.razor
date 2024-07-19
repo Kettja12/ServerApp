@@ -1,0 +1,158 @@
+﻿@page "/registration"
+@inject ILogger<Registration> Logger
+@inject IStringLocalizer<Resource> R
+@inject Session Session
+@inject NavigationManager NavigationManager
+<NavMenu />
+<PageTitle>@R["RegistrationPageTitle"]</PageTitle>
+<div class="container">
+    <div class="row h-100 justify-content-center align-items-center mt-5">
+        <div class="card border-light mb-3" style="width: 18rem;">
+            <h3>@R["RegistrationPageTitle"]</h3>
+            <FieldError Error="@model.SaveError"></FieldError>
+            <div class="mb-3">
+                <label for="username" class="form-label">@R["UserName"]</label>
+                <input type="text" class="form-control" id="username" name="username" @bind="model.User.UserName" AutoCompleteType="Disabled">
+                <FieldError Error="@model.UsernameError"></FieldError>
+            </div>
+            <div class="mb-3">
+                <label for="Email" class="form-label">@R["Email"]</label>
+                <input type="text" class="form-control" id="sukuName" @bind="model.User.Email">
+                <FieldError Error="@model.EmailError"></FieldError>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">@R["Password"]</label>
+                <input type="password" class="form-control" id="@password" name="@password" @bind="model.Password" autocomplete="new-password">
+                <FieldError Error="@model.PasswordError"></FieldError>
+            </div>
+            <div class="mb-3">
+                <label for="password2" class="form-label">@R["PasswordVerification"]</label>
+                <input type="password2" class="form-control" id="passwords" @bind="model.PasswordVerifier" autocomplete="new-password">
+                <FieldError Error="@model.PasswordVerifierError"></FieldError>
+            </div>
+            <div class="mb-3">
+                <label for="firstName" class="form-label">@R["Firstname"]</label>
+                <input type="text" class="form-control" id="firstName" @bind="model.User.FirstName">
+                <FieldError Error="@model.FirstnameError"></FieldError>
+            </div>
+            <div class="mb-3">
+                <label for="lastName" class="form-label">@R["LastName"]</label>
+                <input type="text" class="form-control" id="sukuName" @bind="model.User.LastName">
+                <FieldError Error="@model.LastnameError"></FieldError>
+            </div>
+            <button type="button" class="btn btn-primary" @onclick="RegisterUser">@R["Register"]</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    RegisterModel model = new();
+    string username = Guid.NewGuid().ToString();
+    string password = Guid.NewGuid().ToString();
+    string autocomplete = Guid.NewGuid().ToString();
+    protected override async Task OnInitializedAsync()
+    {
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
+    }
+    async Task RegisterUser()
+    {
+        try
+        {
+            if (model.Validate() == false) return;
+            var result = await Session.RegisterUser(model.User, model.Password);
+            if (result.status == true)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            model.SaveError = result.message;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.StackTrace, ex);
+        }
+    }
+    class RegisterModel
+    {
+        public string SaveError = "";
+        public string UsernameError = "";
+        public string EmailError = "";
+        public string Password = "";
+        public string PasswordError = "";
+        public string PasswordVerifier = "";
+        public string PasswordVerifierError = "";
+        public string FirstnameError = "";
+        public string LastnameError = "";
+        public User User = new();
+
+        public bool Validate()
+        {
+            PasswordError = Password.Verify(false);
+            if (PasswordError == "EmptyValueNotAllowed")
+            {
+                PasswordError = "GivePassword";
+            }
+            PasswordVerifierError = PasswordVerifier.Verify(false);
+            if (PasswordVerifierError == "EmptyValueNotAllowed")
+            {
+                PasswordVerifierError = "Anna salasana varmistus";
+            }
+            if (PasswordVerifierError == "")
+            {
+                if (Password != PasswordVerifier)
+                {
+                    PasswordVerifierError = "Salasana ja salasana varmistus eivät ole samat";
+                }
+            }
+            var errors = User.Validate();
+            if (errors.Any())
+            {
+                foreach (var failure in errors)
+                {
+                    if (failure.field == "UserName")
+                    {
+                        UsernameError = failure.error;
+                        if (UsernameError == "EmptyValueNotAllowed")
+                        {
+                            UsernameError = "GiveUserName";
+                        }
+                    }
+                    if (failure.field == "Email")
+                    {
+                        EmailError = failure.error;
+                        if (EmailError == "EmptyValueNotAllowed")
+                        {
+                            EmailError = "GiveEmail";
+                        }
+                    }
+                    if (failure.field == "FirstName")
+                    {
+                        FirstnameError = failure.error;
+                        if (FirstnameError == "EmptyValueNotAllowed")
+                        {
+                            FirstnameError = "GiveFirstName";
+                        }
+                    }
+                    if (failure.field == "LastName")
+                    {
+                        LastnameError = failure.error;
+                        if (LastnameError == "EmptyValueNotAllowed")
+                        {
+                            LastnameError = "GiveLastName";
+                        }
+                    }
+                }
+                return false;
+            }
+            if (PasswordError + PasswordVerifierError != "") return false;
+            return true;
+        }
+
+    }
+
+    }

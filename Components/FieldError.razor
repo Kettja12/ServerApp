@@ -1,0 +1,10 @@
+﻿@inject IStringLocalizer<Resource> R
+@if(Error!=""){
+<div class="error">@R[Error]</div>
+}
+
+@code {
+    [Parameter]
+    public string Error { get; set; } ="";
+
+}
